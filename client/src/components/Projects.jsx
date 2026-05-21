@@ -45,7 +45,6 @@ const projects = [
 const FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'fullstack', label: 'Full Stack' },
-  { key: 'backend', label: 'Backend / API' },
 ]
 
 export default function Projects() {

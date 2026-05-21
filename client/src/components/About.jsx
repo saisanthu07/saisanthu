@@ -3,9 +3,7 @@ import { useFadeIn } from '../hooks/useFadeIn'
 
 const stats = [
   { number: 1, suffix: '+', label: 'Production Apps', icon: '🚀' },
-  { number: 5, suffix: '+', label: 'AWS Certifications', icon: '☁️' },
-  { number: 4, suffix: '', label: 'Months — Codesuu', icon: '⏱️' },
-  { number: 10, suffix: '+', label: 'Concurrent Rooms', icon: '💻' },
+  { number: 2, suffix: '+', label: 'AWS Certifications', icon: '☁️' },
 ]
 
 function useCountUp(target, duration = 1800, start = false) {
