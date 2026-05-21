@@ -2,6 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Early suppression for noisy browser extension errors injected as regular scripts.
+      // This runs before other app scripts so extension-origin errors are ignored early.
+      (function () {
+        try {
+          window.addEventListener('error', function (e) {
+            if (e && e.filename && e.filename.indexOf('chrome-extension://') === 0) {
+              e.preventDefault && e.preventDefault()
+              return true
+            }
+          })
+
+          window.addEventListener('unhandledrejection', function (ev) {
+            try {
+              var reason = ev && ev.reason
+              var stack = (reason && (reason.stack || reason)) || ''
+              if (typeof stack === 'string' && stack.indexOf('chrome-extension://') !== -1) {
+                ev.preventDefault && ev.preventDefault()
+                return true
+              }
+            } catch (err) {}
+          })
+        } catch (err) {}
+      })()
+    </script>
     <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
