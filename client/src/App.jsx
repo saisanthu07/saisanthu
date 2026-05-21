@@ -6,6 +6,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Certifications from './components/Certifications'
 import Contact from './components/Contact'
+import AdminDashboard from './components/AdminDashboard'
 
 function ScrollProgress() {
   const [progress, setProgress] = useState(0)
@@ -87,6 +88,24 @@ function Footer() {
 }
 
 export default function App() {
+  const [currentPath, setCurrentPath] = useState(window.location.pathname)
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname)
+    }
+    window.addEventListener('popstate', handleLocationChange)
+    return () => window.removeEventListener('popstate', handleLocationChange)
+  }, [])
+
+  const handleNavigate = (path) => {
+    window.history.pushState({}, '', path)
+    setCurrentPath(path)
+    window.scrollTo(0, 0)
+  }
+
+  const isAdmin = currentPath === '/admin'
+
   return (
     <>
       <ScrollProgress />
@@ -95,17 +114,23 @@ export default function App() {
       <div className="blob blob-2" />
       <div className="blob blob-3" />
 
-      <Navbar />
-      <main>
-        <Hero />
-        <About />
-        <Skills />
-        <Projects />
-        <Certifications />
-        <Contact />
-      </main>
-      <Footer />
-      <ScrollToTop />
+      {isAdmin ? (
+        <AdminDashboard onNavigate={handleNavigate} />
+      ) : (
+        <>
+          <Navbar />
+          <main>
+            <Hero />
+            <About />
+            <Skills />
+            <Projects />
+            <Certifications />
+            <Contact />
+          </main>
+          <Footer />
+          <ScrollToTop />
+        </>
+      )}
     </>
   )
 }
