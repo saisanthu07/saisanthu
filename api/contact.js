@@ -1,6 +1,6 @@
-const { connect } = require('../_db')
-const Contact = require('../models/contact')
-const { sendNotificationEmail } = require('../_mailer')
+const { connect } = require('./_db')
+const Contact = require('./models/contact')
+const { sendNotificationEmail } = require('./_mailer')
 
 // Simple in-memory rate limiter for serverless
 const rateLimitMap = new Map()
