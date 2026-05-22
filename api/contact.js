@@ -23,25 +23,61 @@ function checkRateLimit(ip) {
   return true
 }
 
-function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://saisanthoshborra.vercel.app',
+  'https://portfolio-saisanthu07s-projects.vercel.app'
+]
+
+function getCorsOrigin(req) {
+  const origin = req.headers.origin
+  if (!origin) return 'https://saisanthoshborra.vercel.app'
+  if (ALLOWED_ORIGINS.includes(origin)) return origin
+  if (/^https:\/\/portfolio-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin)) return origin
+  return 'https://saisanthoshborra.vercel.app'
+}
+
+function setSecurityHeaders(req, res) {
+  const origin = getCorsOrigin(req)
+  res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  
+  // Security Headers (Helmet Equivalent)
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; sandbox; base-uri 'none';")
 }
 
 function validateBody(body) {
   if (!body) return 'Invalid request body'
   const { name, email, message } = body
   if (!name || typeof name !== 'string' || name.trim().length === 0) return 'Name is required'
-  if (!name.trim().length > 100) return 'Name must be under 100 characters'
+  if (name.trim().length > 100) return 'Name must be under 100 characters'
   if (!email || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) return 'Valid email is required'
   if (!message || typeof message !== 'string' || message.trim().length < 10) return 'Message must be at least 10 characters'
   if (message.trim().length > 2000) return 'Message must be under 2000 characters'
   return null
 }
 
+function sanitizeInput(str, maxLength = 2000) {
+  if (typeof str !== 'string') return ''
+  return str.trim()
+    .slice(0, maxLength)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+}
+
 module.exports = async (req, res) => {
-  setCorsHeaders(res)
+  setSecurityHeaders(req, res)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -72,10 +108,10 @@ module.exports = async (req, res) => {
 
   try {
     const contact = await Contact.create({
-      name: name.trim(),
+      name: sanitizeInput(name, 100),
       email: email.toLowerCase().trim(),
-      subject: subject?.trim() || 'No Subject',
-      message: message.trim(),
+      subject: subject ? sanitizeInput(subject, 200) : 'No Subject',
+      message: sanitizeInput(message, 2000),
       ip: clientIp,
     })
 
@@ -86,7 +122,7 @@ module.exports = async (req, res) => {
       console.error('Email notification failed:', err.message)
     }
 
-    console.log(`📩 New contact from ${name} <${email}>`)
+    console.log(`📩 New contact from ${contact.name} <${contact.email}>`)
 
     return res.status(201).json({
       success: true,
@@ -94,7 +130,7 @@ module.exports = async (req, res) => {
       id: contact._id,
     })
   } catch (err) {
-    console.error('Contact save error:', err)
+    console.error('Contact save error:', err.message)
     return res.status(500).json({ error: 'Server error. Please try again later.' })
   }
 }

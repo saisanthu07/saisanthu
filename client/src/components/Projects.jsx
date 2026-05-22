@@ -12,7 +12,7 @@ const projects = [
     githubUrl: 'https://github.com/saisanthu07',
     stack: ['MongoDB', 'Express.js', 'React.js', 'Node.js', 'WebSockets', 'Clerk Auth', 'AWS EC2'],
     description:
-      'A production-grade real-time collaborative coding platform with multi-tenant session isolation, host-controlled RBAC, and WebSocket-based synchronization. Built and shipped in 4 months, leading a team of 4 engineers using Agile sprints.',
+      'A production-grade real-time collaborative coding platform with multi-tenant session isolation, host-controlled RBAC, and WebSocket-based synchronization. Built and shipped in 4 months.',
     bullets: [
       'Architected per-session isolated sandbox environments across a multi-tenant architecture, eliminating cross-session data leakage and supporting 10+ concurrent coding rooms.',
       'Implemented host-controlled session management with real-time participant tracking and room lifecycle handling — reducing session conflict rate by ~60%.',

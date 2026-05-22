@@ -6,24 +6,77 @@ const mongoose = require('mongoose')
 const nodemailer = require('nodemailer')
 const rateLimit = require('express-rate-limit')
 const { body, validationResult } = require('express-validator')
+const crypto = require('crypto')
 
 const app = express()
 const PORT = process.env.PORT || 5001
 
-// ─── Middleware ────────────────────────────────────────────────────────────────
+// ─── Security & CORS Middleware ───────────────────────────────────────────────
 app.use(express.json())
+
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://saisanthoshborra.vercel.app',
+  'https://portfolio-saisanthu07s-projects.vercel.app'
+]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like server-to-server or test setups)
+    if (!origin) return callback(null, true)
+    if (ALLOWED_ORIGINS.includes(origin) || /^https:\/\/portfolio-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin)) {
+      return callback(null, true)
+    }
+    return callback(null, 'https://saisanthoshborra.vercel.app')
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-admin-key'],
+  credentials: true
 }))
+
+// Security Headers Middleware (Helmet parity)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; sandbox; base-uri 'none';")
+  next()
+})
 
 // Rate limiting — max 5 contact form submissions per 15 min per IP
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: { error: 'Too many requests. Please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 })
+
+// Helper: safe timing comparison to prevent timing side-channel attacks
+function timingSafeCompare(input, secret) {
+  if (!secret || secret.length < 8) return false
+  if (typeof input !== 'string') return false
+  
+  const inputHash = crypto.createHash('sha256').update(input).digest()
+  const secretHash = crypto.createHash('sha256').update(secret).digest()
+  
+  return crypto.timingSafeEqual(inputHash, secretHash)
+}
+
+function sanitizeInput(str, maxLength = 2000) {
+  if (typeof str !== 'string') return ''
+  return str.trim()
+    .slice(0, maxLength)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+}
 
 // ─── MongoDB ───────────────────────────────────────────────────────────────────
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/portfolio'
@@ -41,14 +94,14 @@ const ContactSchema = new mongoose.Schema({
   readAt: Date,
 }, { timestamps: true })
 
-const Contact = mongoose.model('Contact', ContactSchema)
+const Contact = mongoose.models.Contact || mongoose.model('Contact', ContactSchema)
 
 // ─── Nodemailer ────────────────────────────────────────────────────────────────
 const createTransporter = () => nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS, // Gmail App Password (not your account password)
+    pass: process.env.SMTP_PASS, // Gmail App Password
   },
 })
 
@@ -83,7 +136,7 @@ async function sendNotificationEmail(contact) {
           </tr>
           <tr>
             <td style="padding: 12px 0; color: #8888aa; vertical-align: top;">Message</td>
-            <td style="padding: 12px 0; line-height: 1.7;">${contact.message.replace(/\n/g, '<br />')}</td>
+            <td style="padding: 12px 0; line-height: 1.7;">${contact.message}</td>
           </tr>
         </table>
         <p style="color: #555570; font-size: 12px; margin-top: 32px;">Received at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
@@ -146,29 +199,29 @@ app.post(
     const { name, email, subject, message } = req.body
 
     try {
-      // Save to MongoDB
+      // Save to MongoDB with sanitization to shield against stored injection attacks
       const contact = await Contact.create({
-        name,
-        email,
-        subject: subject || 'No Subject',
-        message,
+        name: sanitizeInput(name, 100),
+        email: email.toLowerCase().trim(),
+        subject: subject ? sanitizeInput(subject, 200) : 'No Subject',
+        message: sanitizeInput(message, 2000),
         ip: req.ip,
       })
 
-      // Send emails (non-blocking — don't fail if email fails)
+      // Send emails (non-blocking)
       sendNotificationEmail(contact).catch(err =>
         console.error('📧 Email notification failed:', err.message)
       )
 
-      console.log(`📩 New contact from ${name} <${email}>`)
+      console.log(`📩 New contact from ${contact.name} <${contact.email}>`)
 
       res.status(201).json({
         success: true,
-        message: 'Message received! I\'ll get back to you soon.',
+        message: "Message received! I'll get back to you soon.",
         id: contact._id,
       })
     } catch (err) {
-      console.error('❌ Contact save error:', err)
+      console.error('❌ Contact save error:', err.message)
       res.status(500).json({ error: 'Server error. Please try again later.' })
     }
   }
@@ -176,14 +229,36 @@ app.post(
 
 // Get all submissions (protected by admin key)
 app.get('/api/contact/submissions', async (req, res) => {
+  // Failsafe configuration guard
+  if (!process.env.ADMIN_KEY || process.env.ADMIN_KEY.length < 8) {
+    console.error('❌ Configuration Guard: ADMIN_KEY environment variable is unset or weaker than 8 characters.')
+    return res.status(500).json({ error: 'Authentication engine misconfigured.' })
+  }
+
   const adminKey = req.headers['x-admin-key']
-  if (adminKey !== process.env.ADMIN_KEY) {
+  if (!adminKey || !timingSafeCompare(adminKey, process.env.ADMIN_KEY)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
+
   try {
-    const contacts = await Contact.find().sort({ createdAt: -1 }).limit(100)
-    res.json({ count: contacts.length, contacts })
+    const page = parseInt(req.query.page) || 1
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100)
+    const skip = (page - 1) * limit
+
+    const [contacts, total] = await Promise.all([
+      Contact.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Contact.countDocuments(),
+    ])
+
+    res.json({
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      count: contacts.length,
+      contacts
+    })
   } catch (err) {
+    console.error('❌ Fetch submissions error:', err.message)
     res.status(500).json({ error: 'Server error' })
   }
 })

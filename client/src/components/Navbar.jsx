@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 
 const links = [
   { label: 'About', href: '#about' },
+  { label: 'Education', href: '#education' },
   { label: 'Skills', href: '#skills' },
   { label: 'Projects', href: '#projects' },
   { label: 'Certs', href: '#certifications' },
   { label: 'Contact', href: '#contact', cta: true },
 ]
 
-const sectionIds = ['hero', 'about', 'skills', 'projects', 'certifications', 'contact']
+const sectionIds = ['hero', 'about', 'education', 'skills', 'projects', 'certifications', 'contact']
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
