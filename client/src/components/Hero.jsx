@@ -82,7 +82,7 @@ export default function Hero() {
           <div className="hero-content fade-in visible">
             <div className="hero-status">
               <span className="hero-status-dot" />
-              Open to Opportunities
+              Open to Opportunities (Internships & Full-Time)
             </div>
 
             <h1 className="hero-name">

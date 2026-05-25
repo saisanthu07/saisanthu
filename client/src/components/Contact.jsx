@@ -93,7 +93,7 @@ export default function Contact() {
           <div className="contact-info">
             <h3>Available for opportunities</h3>
             <p>
-              I'm actively looking for full-stack or backend developer roles. Whether
+              I'm actively looking for full-stack developer or AWS internship roles. Whether
               you have a project to discuss, a position to fill, or just want to say
               hello — my inbox is always open.
             </p>
