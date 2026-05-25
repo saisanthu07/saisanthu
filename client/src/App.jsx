@@ -77,7 +77,7 @@ function Footer() {
         </div>
         <div className="footer-bottom">
           <span className="footer-copy">
-            © {year} Borra Sai Santhosh · Built with React + Vercel
+            © {year} Borra Sai Santhosh · Built with React + Vercel 
           </span>
           <span className="footer-copy">
             Made with <span className="footer-heart">♥</span> from Andhra Pradesh, India

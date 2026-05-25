@@ -4,49 +4,49 @@ const categories = [
   {
     icon: '⚡',
     name: 'Languages',
-    color: '#ffb347',
+    color: '#ff9f0a', // iOS Orange
     span: 'wide',
     skills: ['JavaScript (ES2022+)', 'Python', 'SQL', 'Java'],
   },
   {
     icon: '🧩',
     name: 'Frameworks & Libraries',
-    color: '#00d4ff',
+    color: '#64d2ff', // iOS Teal
     span: 'wide',
     skills: ['React.js', 'Node.js', 'Express.js', 'Socket.io', 'WebSockets'],
   },
   {
     icon: '🗄️',
     name: 'Databases',
-    color: '#00ff88',
+    color: '#30d158', // iOS Green
     span: 'normal',
     skills: ['MongoDB', 'MongoDB Atlas', 'MySQL'],
   },
   {
     icon: '☁️',
     name: 'Cloud — AWS',
-    color: '#ff9f43',
+    color: '#ff9f0a', // iOS Orange
     span: 'normal',
     skills: ['EC2', 'S3', 'CloudFront', 'Lambda', 'API Gateway', 'IAM', 'Route 53', 'CloudWatch'],
   },
   {
     icon: '🔐',
     name: 'Auth & Security',
-    color: '#7b2fff',
+    color: '#bf5af2', // iOS Purple
     span: 'normal',
     skills: ['Clerk Auth', 'JWT', 'bcrypt', 'RBAC', 'CORS', 'HTTPS'],
   },
   {
     icon: '🛠️',
     name: 'Tools & Platforms',
-    color: '#00d4ff',
+    color: '#0a84ff', // iOS Blue
     span: 'normal',
     skills: ['Git', 'GitHub', 'Vercel', 'Render', 'Postman', 'Cloudinary', 'GitHub Actions'],
   },
   {
     icon: '🤖',
     name: 'AI Integration',
-    color: '#ff6b6b',
+    color: '#64d2ff', // iOS Teal
     span: 'normal',
     skills: ['AI API Integration', 'Prompt Engineering'],
   },
