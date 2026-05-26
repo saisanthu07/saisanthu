@@ -5,7 +5,7 @@ const certs = [
     title: 'AWS Academy Cloud Foundations',
     issuer: 'Amazon Web Services',
     date: 'Feb 2026',
-    url: 'https://www.credly.com',
+    url: 'https://www.credly.com/badges/7dc7c354-2d70-4778-888c-163e21af178c/public_url',
     badge: '☁️',
     accent: '#ff9f43',
     desc: 'Core AWS cloud concepts, services, security, architecture, and pricing.',
