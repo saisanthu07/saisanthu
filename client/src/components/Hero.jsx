@@ -108,7 +108,7 @@ export default function Hero() {
               </button>
               <a
                 className="btn-secondary"
-                href="/Borra%20sai%20santhosh%20(2).pdf"
+                href="/resume.pdf"
                 download="Sai_Santhosh_Borra_Resume.pdf"
                 id="hero-download-resume-btn"
               >

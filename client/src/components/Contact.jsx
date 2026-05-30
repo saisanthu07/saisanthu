@@ -135,7 +135,7 @@ export default function Contact() {
               </div>
             </div>
 
-            <a href="/Borra%20sai%20santhosh%20(2).pdf" download="Sai_Santhosh_Borra_Resume.pdf" className="btn-primary contact-resume-btn" id="contact-resume-btn">
+            <a href="/resume.pdf" download="Sai_Santhosh_Borra_Resume.pdf" className="btn-primary contact-resume-btn" id="contact-resume-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Resume
             </a>
