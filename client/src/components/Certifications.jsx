@@ -37,6 +37,15 @@ const certs = [
     accent: '#00ff88',
     desc: 'TCP/IP, routing, network security, and internet protocol fundamentals.',
   },
+  {
+    title: 'Git - Skill Up',
+    issuer: 'GeeksforGeeks / Nation SkillUp',
+    date: '2026',
+    url: null,
+    badge: '🌿',
+    accent: '#2f855a',
+    desc: 'Completed the Git - Skill Up program in recognition of dedication, consistency, and successful course completion.',
+  },
 ]
 
 const community = [
